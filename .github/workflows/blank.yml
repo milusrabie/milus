@@ -86,7 +86,7 @@ jobs:
         sudo warp-cli --accept-tos registration new
         sudo warp-cli --accept-tos connect
         sleep 5
-        sudo warp-cli status
+        sudo warp-cli --accept-tos status
 
     - name: 🧪 Run milus.py with debug
       run: |
