@@ -30,7 +30,7 @@ def accept_consent(sb: SB):
 def monitor_stream(sb: SB, url: str, check_element: str):
     """Open stream in new driver and monitor the presence of a key element."""
     driver = sb.get_new_driver(undetectable=True)
-    driver.uc_open_with_reconnect(url, timeout=5)
+    driver.uc_open_with_reconnect(url, 5)
     handle_captcha(driver)
     accept_consent(driver)
 
@@ -41,7 +41,7 @@ def monitor_stream(sb: SB, url: str, check_element: str):
 
 def handle_kick_stream(sb: SB, username: str):
     url = f"https://kick.com/{username}"
-    sb.uc_open_with_reconnect(url, timeout=5)
+    sb.uc_open_with_reconnect(url, 5)
     handle_captcha(sb)
     accept_consent(sb)
 
@@ -54,7 +54,7 @@ def handle_twitch_stream(sb: SB, username: str):
         return
 
     url = f"https://www.twitch.tv/{username}"
-    sb.uc_open_with_reconnect(url, timeout=5)
+    sb.uc_open_with_reconnect(url, 5)
     accept_consent(sb)
 
     chat_selector = 'div[aria-label="Chat messages"]'
