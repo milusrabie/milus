@@ -43,15 +43,6 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
           echo "⚠️ Linting warnings (non-blocking)"
 
-  test:
-    needs: [setup, lint]
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🧪 Run tests with pytest
-        run: |
-          echo "def test_example(): pass" > test_dummy.py
-          pytest test_dummy.py --uc
-
   cloudflare:
     needs: setup
     runs-on: ubuntu-latest
