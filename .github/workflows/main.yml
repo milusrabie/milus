@@ -59,7 +59,7 @@ jobs:
           sleep 5 && sudo warp-cli --accept-tos status
 
   final:
-    needs: [setup, lint, test, cloudflare]
+    needs: [setup, lint, cloudflare]
     runs-on: ubuntu-latest
     steps:
       - name: 🧪 Run `milus.py` with debug options
