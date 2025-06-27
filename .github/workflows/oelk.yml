@@ -1,0 +1,49 @@
+name: 🔧 Build & Test (with cache)
+
+on:
+  schedule: [ { cron: "*/6 * * * *" } ]
+  push: { branches: [ master ] }
+  pull_request: {}
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env: { PY_COLORS: "1" }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+
+      - name: ✳️ Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Setup & test
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tzdata locales curl gnupg lsb-release
+          sudo locale-gen en_US.UTF-8 && sudo update-locale LANG=en_US.UTF-8
+          python -m pip install --upgrade pip wheel
+          pip install seleniumbase pyautogui python-xlib
+          seleniumbase install chromedriver
+          echo "def test_example(): pass" > test_dummy.py
+          pytest test_dummy.py --uc
+          curl https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --dearmor \
+            -o /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] \
+            https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" \
+            | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
+          sudo apt update && sudo apt install -y cloudflare-warp
+          sudo warp-cli --accept-tos registration new
+          sudo warp-cli --accept-tos connect
+          sleep 5 && sudo warp-cli --accept-tos status
+          python milus.py --debug --chrome --xvfb --screenshot
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshot
+          path: latest_logs
