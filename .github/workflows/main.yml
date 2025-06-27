@@ -69,4 +69,13 @@ jobs:
 
   final:
     needs: [setup, lint, test, cloudflare]
-    runs-
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧪 Run `milus.py` with debug options
+        run: |
+          python milus.py --debug --chrome --xvfb --screenshot
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshot
+          path: latest_logs
