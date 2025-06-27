@@ -1,4 +1,4 @@
-name: 🔧 Build & Test (modular)
+name: 🔧 Build & Test (compact)
 
 on:
   schedule: [ { cron: "*/6 * * * *" } ]
@@ -7,63 +7,32 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  setup:
+  build:
     runs-on: ubuntu-latest
-    outputs:
-      python-version: "3.13"
-    
+    env: { PY_COLORS: "1" }
     steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: 🐍 Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ steps.setup.outputs.python-version }}
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
 
-      - name: 🌍 Configure Locale
+      - name: 🧼 Setup & Test
         run: |
           sudo apt-get update && sudo apt-get install -y tzdata locales curl gnupg lsb-release
           sudo locale-gen en_US.UTF-8 && sudo update-locale LANG=en_US.UTF-8
-
-      - name: 📦 Install Python dependencies
-        run: |
           python -m pip install --upgrade pip wheel
           pip install seleniumbase pyautogui python-xlib flake8
-
-      - name: 📥 Install Chromedriver
-        run: seleniumbase install chromedriver
-
-  lint:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🧼 Lint with flake8
-        run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
-          echo "⚠️ Linting warnings (non-blocking)"
-
-  cloudflare:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🕸️ Install Cloudflare WARP
-        run: |
+          seleniumbase install chromedriver
+          echo "def test_example(): pass" > test_dummy.py
+          pytest test_dummy.py --uc
           curl https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
-          echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] \
-            https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" \
+          echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" \
             | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
           sudo apt update && sudo apt install -y cloudflare-warp
           sudo warp-cli --accept-tos registration new
           sudo warp-cli --accept-tos connect
           sleep 5 && sudo warp-cli --accept-tos status
-
-  final:
-    needs: [setup, lint, cloudflare]
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🧪 Run `milus.py` with debug options
-        run: |
           python milus.py --debug --chrome --xvfb --screenshot
 
       - uses: actions/upload-artifact@v4
