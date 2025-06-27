@@ -59,7 +59,7 @@ jobs:
     - name: 📥 Install chromedriver
       run: seleniumbase install chromedriver
 
-    - name: 🧪 Sanity check: pytest works
+    - name: 🧪 Sanity check pytest works
       run: |
         echo "def test_example(): pass" > test_dummy.py
         pytest test_dummy.py --uc
